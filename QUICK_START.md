@@ -1,251 +1,285 @@
-# PowerFlow Google Sheets Integration - Quick Start
+# 🚀 Powerflow Dashboard v2.0 - Quick Start
 
-## TL;DR - 5 Steps to Get Running
+## ⚡ 3-Step Installation (2 minutes)
 
-### Step 1: Upload Excel to Google Sheets (2 min)
-- Go to https://sheets.google.com
-- Click "New" → "Spreadsheet"
-- File → Import → Upload your `Maydisc26_1_.xlsx`
-- Select "Create new spreadsheet"
-
-### Step 2: Get Your Sheet ID (1 min)
-- Copy from URL: `https://docs.google.com/spreadsheets/d/{COPY_THIS}/edit`
-- Example: `1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o`
-
-### Step 3: Create API Key (3 min)
-1. Go to https://console.cloud.google.com/
-2. Create new project: "PowerFlow"
-3. APIs & Services → Library → Search "Google Sheets API" → Enable
-4. APIs & Services → Credentials → "+ CREATE CREDENTIALS" → API Key
-5. Copy the API key: `AIzaSyD...` (long string)
-
-### Step 4: Share Your Sheet (30 sec)
-- Open your Google Sheet
-- Click Share (top right)
-- "Anyone with the link" → Viewer
-- Copy the link
-
-### Step 5: Configure PowerFlow (1 min)
-Create `.env` file in project root:
-```env
-VITE_GOOGLE_SHEET_ID=your-sheet-id-from-step-2
-VITE_GOOGLE_API_KEY=your-api-key-from-step-3
-VITE_SHEET_NAME=Sheet1
-VITE_USE_GOOGLE_SHEETS=true
-```
-
-**Done!** ✅ Your PowerFlow app now pulls live data from Google Sheets.
-
----
-
-## Your Data Structure
-
-### Excel File Info
-- **File**: `Maydisc26_1_.xlsx`
-- **Records**: 934 consumers
-- **Agencies**: Annapurna (and others from Sheet2, Sheet3)
-
-### Column Mapping
-```
-Excel          →  PowerFlow
-─────────────────────────────
-SL NO          →  (ignored)
-Consumer Id    →  id, consumerId
-Name           →  name
-Address        →  address
-B/C            →  billingCategory, phaseClass (inferred)
-Meter          →  meterCode
-Due date Range →  dueDateStart, dueDateEnd (parsed)
-Net O/S        →  outstandingDues
-Mobile Number  →  mobile
-Agency         →  agency
-```
-
-### Auto-Generated Fields
-- **deviceId**: Generated from consumer ID (e.g., DEV-0983)
-- **phaseClass**: Inferred from B/C column (1/2/3-Phase)
-- **status**: Auto-assigned based on outstanding dues:
-  - dues > ₹5,000 → disconnected
-  - dues > ₹0 → pending
-  - dues = ₹0 → connected
-
----
-
-## How It Works
-
-### Data Flow Diagram
-```
-Your Google Sheet
-       ↓
-Google Sheets API v4 (reads data)
-       ↓
-googleSheetsService.js (transforms + validates)
-       ↓
-Consumer Hub Page (displays in grid/table)
-       ↓
-Browser Cache (5 min TTL for performance)
-```
-
-### Auto-Refresh Strategy
-- **On Load**: Fetches from Google Sheets (or uses cache if < 5 min old)
-- **Manual Refresh**: Click "Refresh" button to force new fetch
-- **Status Updates**: Stored locally in browser (doesn't modify Google Sheet)
-- **Cache Duration**: 5 minutes (configurable in googleSheetsService.js)
-
----
-
-## File Changes Made
-
-### New Files
-```
-powerflow/
-├── src/
-│   ├── services/
-│   │   └── googleSheetsService.js    ← Google Sheets integration
-│   ├── utils/
-│   │   └── dataImport.js             ← Data transformation utilities
-│   └── pages/
-│       └── ConsumerHubGoogleSheets.jsx ← New consumer page
-├── .env.example                      ← Template for config
-└── GOOGLE_SHEETS_SETUP.md            ← Detailed setup guide
-```
-
-### To Use the New Page
-Update `src/App.jsx`:
-```jsx
-// Before:
-import ConsumerHub from './pages/ConsumerHub'
-
-// After:
-import ConsumerHub from './pages/ConsumerHubGoogleSheets'
-```
-
-Or rename the file:
 ```bash
-mv src/pages/ConsumerHubGoogleSheets.jsx src/pages/ConsumerHub.jsx
+# 1. Install dependencies
+npm install
+
+# 2. Start development server
+npm run dev
+
+# 3. Open in browser
+# http://localhost:5173
 ```
 
 ---
 
-## Testing
+## 🔐 Login
 
-### Step 1: Check Console for Errors
-Press `F12` → Console tab → Look for red errors
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | admin | admin123 |
+| User | user | user123 |
 
-### Step 2: Manual API Test
-In your browser console:
-```javascript
-// Test fetching from Google Sheets
-import { fetchConsumersFromSheet } from './src/services/googleSheetsService'
-const data = await fetchConsumersFromSheet()
-console.log(data) // Should show your consumers
+---
+
+## 📚 Main Features
+
+### 1️⃣ Dashboard
+- View all consumers in cards
+- Search by name, ID, mobile
+- Quick stats: Active, Pending, Disconnected
+- Upload CSV/Excel files
+
+### 2️⃣ Consumer Details
+- Click "View" on any consumer card
+- See all 11 fields:
+  - Name, ID, Mobile, Address
+  - Class, Device, Due Date
+  - Due Range, Outstanding Dues
+  - Status, Agency
+- Edit any field and save
+
+### 3️⃣ Agency Management
+- Tab: "🏢 Agency Management"
+- Left: Select agency from list
+- Right: See all consumers in that agency
+- Update status (Active/Pending/Disconnected)
+
+### 4️⃣ Admin Panel (admin only)
+- Tab: "⚙️ Admin Panel"
+- View system statistics
+- Add new agencies
+- See consumer distribution
+
+---
+
+## 📤 Upload Consumer Data
+
+### File Format (CSV)
+```csv
+id,name,mobile,address,class,device,dueDate,dueRange,outstandingDues,status,agency
+C001,Rajesh Kumar,9876543210,123 Main St,A,Smart Meter,2024-06-30,30 days,5000,Active,Kolkata North
 ```
 
-### Step 3: Verify Data Loading
-- Open Consumer Hub page
-- Should see blue banner: "📊 Data synced from Google Sheets"
-- Should display all 934+ consumers
-- Agency filter should auto-populate with your agencies
+### Required Columns (exact names)
+- `id` - Consumer ID
+- `name` - Full name
+- `mobile` - Phone number
+- `address` - Full address
+- `class` - Consumer class (A/B/C)
+- `device` - Meter type
+- `dueDate` - Due date (YYYY-MM-DD)
+- `dueRange` - Duration (e.g., "30 days")
+- `outstandingDues` - Amount owed
+- `status` - Active/Pending/Disconnected
+- `agency` - Agency name
+
+### Supported Formats
+✅ CSV (.csv)
+✅ Excel (.xlsx)
+✅ Legacy Excel (.xls)
+
+### Steps
+1. Click "Upload CSV/Excel File"
+2. Select your file
+3. Click "Upload"
+4. Sample data replaced automatically ✨
 
 ---
 
-## Troubleshooting Checklist
+## 🎯 Typical Workflows
 
-| Issue | Solution |
-|-------|----------|
-| "Google Sheet ID not configured" | Check `.env` file has `VITE_GOOGLE_SHEET_ID` |
-| "API error: 403" | Check API key is valid & Google Sheets API is enabled |
-| "No data showing" | Click "Refresh" button • Check sheet is publicly accessible |
-| "Mobile numbers look weird" | This is normal for large phone numbers stored as floats in Excel |
-| "Status all wrong" | The auto-assignment is based on outstanding dues • Modify `getStatusFromDues()` in googleSheetsService.js if needed |
-
----
-
-## Customization
-
-### Change Status Logic
-Edit `googleSheetsService.js` → `getStatusFromDues()`:
-```javascript
-function getStatusFromDues(dues) {
-  if (dues > 3000) return 'disconnected'  // Changed from 5000
-  if (dues > 0) return 'pending'
-  return 'connected'
-}
+### Workflow 1: Upload & Review
+```
+1. Dashboard → Upload CSV
+2. Select file → Click Upload
+3. All consumers appear in dashboard
+4. Search to find specific consumer
+5. Click "View" for details
 ```
 
-### Change Cache Duration
-Edit `googleSheetsService.js` → `CACHE_DURATION`:
-```javascript
-const CACHE_DURATION = 10 * 60 * 1000  // Changed from 5 to 10 minutes
+### Workflow 2: Update Consumer Details
+```
+1. Dashboard → Click "View"
+2. Consumer Detail Page → Click "Edit"
+3. Modify any field
+4. Click "Save Changes"
+5. Back to dashboard (updated)
 ```
 
-### Add More Agencies
-Update Google Sheet with new agency names → App auto-detects them
-
-### Custom Field Mapping
-Edit `parseConsumerData()` in googleSheetsService.js to add custom logic
-
----
-
-## Common Questions
-
-**Q: Will it work offline?**
-A: Only if you've already loaded the data (it's cached for 5 min)
-
-**Q: Can I edit data in the app?**
-A: Yes, but changes are stored locally (not reflected in Google Sheet)
-
-**Q: How many consumers can it handle?**
-A: Tested with 934+, should work with thousands
-
-**Q: Can multiple people edit the Google Sheet?**
-A: Yes! Changes will be fetched when the app refreshes
-
-**Q: Is my API key visible to users?**
-A: No, it's only used in the browser and isn't stored anywhere
+### Workflow 3: Manage Agency Status
+```
+1. Agency Management tab
+2. Click agency name (left panel)
+3. See all consumers in that agency
+4. Click "Update Status" on consumer
+5. Select new status
+6. Click "Save"
+```
 
 ---
 
-## Security Notes
+## 🎨 Status Colors
 
-- ✅ API key is used only by the browser (not sent to any other server)
-- ✅ .env file is NOT pushed to Git (add to .gitignore)
-- ✅ Google Sheet is read-only from the app (no modifications)
-- ⚠️ Keep your API key secret - don't share it
-
-For production, consider:
-- Using Google Cloud restrictions on API key (IP whitelist)
-- Implementing a backend proxy
-- Using service accounts instead of API keys
+| Status | Color | Meaning |
+|--------|-------|---------|
+| Active | 🟢 Green | Consumer is active |
+| Pending | 🟡 Yellow | Awaiting action |
+| Disconnected | 🔴 Red | Service disconnected |
 
 ---
 
-## Next Steps
+## 📊 Sample Data (Included)
 
-1. **Complete Setup**: Follow the 5-step TL;DR above
-2. **Test**: Load the app and check Consumer Hub
-3. **Customize**: Modify status logic, date formats, etc as needed
-4. **Deploy**: Push to production (remember to add .env to secrets)
-5. **Maintain**: Keep Google Sheet updated, monitor API usage
+File: `sample_consumers.csv`
 
----
-
-## Support Resources
-
-- **Google Sheets API Docs**: https://developers.google.com/sheets/api
-- **Setup Guide**: `GOOGLE_SHEETS_SETUP.md` (full details)
-- **Code Files**: 
-  - `src/services/googleSheetsService.js` (main integration)
-  - `src/pages/ConsumerHubGoogleSheets.jsx` (UI)
-  - `src/utils/dataImport.js` (data utilities)
+8 sample consumers included:
+- Multiple agencies
+- Various statuses
+- Different outstanding amounts
+- Test all features
 
 ---
 
-## Version Info
+## ⚠️ Important Notes
 
-- PowerFlow with Google Sheets Integration v1.0
-- Tested with: React 18.2, Vite 4.x
-- Google Sheets API v4
-- Data: 934 consumer records from Maydisc26_1_.xlsx
+### Data Storage
+- ⚠️ Data stored in browser memory only
+- Resets on page refresh
+- For persistence → add database backend
 
-Good luck! 🚀
+### Backup
+- Use "Export CSV" to backup data
+- Admin Panel → "Create Backup"
+
+### Admin Access
+- Only admin user sees Admin Panel tab
+- Only admin can add agencies
+
+---
+
+## 🆘 Common Issues
+
+### Issue: Upload fails
+**Solution**: Check CSV format matches template
+```csv
+id,name,mobile,address,class,device,dueDate,dueRange,outstandingDues,status,agency
+```
+
+### Issue: Data disappeared
+**Solution**: Data resets on page refresh (expected)
+- Re-upload CSV file to restore
+- Use Export CSV to backup
+
+### Issue: Admin panel blank
+**Solution**: 
+- Logout (button top right)
+- Login again as admin
+- Reload page (F5)
+
+### Issue: Port 5173 in use
+**Solution**:
+```bash
+npm run dev -- --port 3000
+```
+
+---
+
+## 🔥 Power Features
+
+### Search
+- Real-time search
+- Search by: name, ID, mobile
+- Filters dashboard instantly
+
+### Export
+- Dashboard → "Export CSV"
+- Exports filtered consumers
+- Date-stamped filename
+
+### Multi-Select
+- Hold Ctrl+Click to select multiple
+- Upcoming: bulk operations
+
+---
+
+## 📦 Project Structure
+
+```
+├── App.jsx                 # Main dashboard
+├── pages/
+│   ├── ConsumerDetail.jsx  # Detail view
+│   ├── AdminPanel.jsx      # Admin only
+│   └── AgencyModule.jsx    # Agency management
+├── package.json            # Dependencies
+├── vite.config.js          # Config
+└── sample_consumers.csv    # Test data
+```
+
+---
+
+## 🎓 Field Explanations
+
+| Field | Type | Example | Notes |
+|-------|------|---------|-------|
+| id | Text | C001 | Unique identifier |
+| name | Text | Rajesh Kumar | Consumer name |
+| mobile | Text | 9876543210 | Phone number |
+| address | Text | 123 Main St | Full address |
+| class | A/B/C | A | Consumer class |
+| device | Text | Smart Meter | Meter type |
+| dueDate | Date | 2024-06-30 | Payment due date |
+| dueRange | Text | 30 days | Duration text |
+| outstandingDues | Number | 5000 | Amount owed (₹) |
+| status | Enum | Active | Current status |
+| agency | Text | Kolkata North | Assigned agency |
+
+---
+
+## 🚀 Deployment Checklist
+
+- [ ] Test all features locally
+- [ ] Upload real consumer data
+- [ ] Verify all fields display correctly
+- [ ] Test on mobile (Ctrl+Shift+M)
+- [ ] Run: `npm run build`
+- [ ] Deploy `dist/` folder
+- [ ] Test on production URL
+
+---
+
+## 📞 Quick Help
+
+- **Lost password?** Use demo credentials (admin/admin123)
+- **Need to reset?** Clear browser cache (Ctrl+Shift+Delete)
+- **Check version?** v2.0 (check in code)
+- **File template?** Use `sample_consumers.csv`
+
+---
+
+## ✨ What's New in v2.0
+
+✅ Full consumer details (11 fields)
+✅ Inline editing on detail page
+✅ Excel/CSV upload with parsing
+✅ Agency management module
+✅ Status update system
+✅ Beautiful gradient UI
+✅ Mobile responsive
+✅ Real-time search
+✅ Data export
+✅ Admin statistics
+
+---
+
+**You're all set! Start the server and explore! 🎉**
+
+```bash
+npm run dev
+```
+
+Then visit: **http://localhost:5173**
+
+**Default login**: admin / admin123

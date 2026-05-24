@@ -1,0 +1,9 @@
+id,name,mobile,address,class,device,dueDate,dueRange,outstandingDues,status,agency
+C001,Rajesh Kumar,9876543210,"123 Main Street, Kolkata, WB 700001",A,Smart Meter,2024-06-30,30 days,5000,Active,Kolkata North
+C002,Priya Singh,9876543211,"456 Park Avenue, Bangalore, KA 560001",B,Analog Meter,2024-07-15,15 days,2500,Pending,Bangalore Metro
+C003,Amit Patel,9876543212,"789 Tech Park, Mumbai, MH 400001",A,Smart Meter,2024-08-01,60 days,8500,Disconnected,Mumbai Central
+C004,Neha Desai,9876543213,"321 Business Hub, Delhi, DL 110001",C,Smart Meter,2024-06-15,5 days,1200,Active,Delhi North
+C005,Vikram Rao,9876543214,"654 Commerce Street, Chennai, TN 600001",A,Digital Meter,2024-07-01,45 days,3500,Active,Chennai South
+C006,Anjali Verma,9876543215,"987 Finance Plaza, Hyderabad, TG 500001",B,Smart Meter,2024-06-20,20 days,2200,Pending,Hyderabad Central
+C007,Sanjay Kumar,9876543216,"159 Industrial Zone, Pune, MH 411001",C,Analog Meter,2024-07-10,10 days,900,Active,Pune East
+C008,Deepika Sharma,9876543217,"753 Trade Center, Ahmedabad, GJ 380001",A,Smart Meter,2024-08-15,90 days,12000,Disconnected,Ahmedabad North
